@@ -13,6 +13,7 @@ import { timeoutFetch } from "fetch-helper-x";
 const response = await timeoutFetch("https://google.com", { requestTimeout: 10000, idleTimeout: 1000 });
 
 console.log(await response.text());
+// if you want to cancel the body, use `await response.cancelBody()` instead; otherwise, the program will hang because the connection and timer are still active
 ```
 
 ## Usage for Browsers

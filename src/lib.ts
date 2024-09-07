@@ -28,7 +28,7 @@ export class TimeoutResponse {
     /**
      * You should not new a `TimeoutResponse` on your own.
      */
-    constructor(private readonly response: Response, private readonly createBody?: () => ReadableStream<Uint8Array>) {
+    constructor(private readonly response: Response, private timeoutAbort?: TimeoutAbort, private readonly createBody?: () => ReadableStream<Uint8Array>) {
     }
 
     /**
@@ -78,6 +78,23 @@ export class TimeoutResponse {
      */
     public get url() {
         return this.response.url;
+    }
+
+    /**
+     * If you want to cancel the body, use this function instead of `body.cancel()` or `body.getReader().cancel()`.
+     */
+    public async cancelBody(): Promise<void> {
+        if (typeof this._body !== "undefined") {
+            if (this._body !== null) {
+                await this._body.cancel();
+            }
+        } else if (this.response.body) {
+            await this.response.body.cancel();
+        }
+        
+        if (typeof this.timeoutAbort !== "undefined") {
+            this.timeoutAbort.abort();
+        }
     }
 
     /**
@@ -196,7 +213,7 @@ export const timeoutFetch = async (input: string | URL, init?: TimeoutRequestIni
         timeoutAbort.abort();
     }
 
-    return new TimeoutResponse(response, createBody);
+    return new TimeoutResponse(response, timeoutAbort, createBody);
 };
 
 /**

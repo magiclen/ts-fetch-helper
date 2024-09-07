@@ -117,3 +117,11 @@ describe("isAbortError", () => {
         }
     }, 7000);
 });
+
+describe("cancelBody", () => {
+    it("close", async () => {
+        const response = await timeoutFetch(URL, { requestTimeout: 100000 });
+
+        await response.cancelBody();
+    });
+});
