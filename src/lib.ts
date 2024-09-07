@@ -144,16 +144,21 @@ export class TimeoutResponse {
 }
 
 /**
+ * Options for the fetch request, including request timeout and idle timeout.
+ */
+export type TimeoutRequestInit = Omit<RequestInit, "signal" | "duplex"> & TimeoutOptions & { duplex?: "half" };
+
+/**
  * A utility function to perform a fetch request with optional request and idle timeouts.
  *
  * @param {string | URL} input The URL or request input for the fetch.
- * @param {Omit<RequestInit, "signal"> & TimeoutOptions} [init] Options for the fetch request, including request timeout and idle timeout.
+ * @param {TimeoutRequestInit} [init] Options for the fetch request, including request timeout and idle timeout.
  *
  * @returns {Promise<TimeoutResponse>} A `TimeoutResponse` instance wrapping the fetch response.
  *
  * @throws {AbortError} If the request is aborted due to a timeout.
  */
-export const timeoutFetch = async (input: string | URL, init?: Omit<RequestInit, "signal"> & TimeoutOptions): Promise<TimeoutResponse> => {
+export const timeoutFetch = async (input: string | URL, init?: TimeoutRequestInit): Promise<TimeoutResponse> => {
     if (typeof init === "undefined" || (typeof init.idleTimeout === "undefined" && typeof init.requestTimeout === "undefined")) {
         const response = await fetch(input, init);
 
