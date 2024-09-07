@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=UTF-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- <script src="https://cdn.jsdelivr.net/gh/magiclen/ts-fetch-helper/dist/fetch-helper.min.js"></script> -->
+    <script src="./dist/fetch-helper.min.js"></script>
+    <title>fetch-helper</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="p-3 p-lg-5">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-12 col-sm-6">
+                <div class="form-floating">
+                    <input type="number" id="request-timeout" class="form-control"
+                        placeholder="timeout in milliseconds" min="0">
+                    <label for="request-timeout">Request Timeout</label>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6">
+                <div class="form-floating">
+                    <input type="number" id="idle-timeout" class="form-control"
+                        placeholder="timeout in milliseconds" min="0">
+                    <label for="idle-timeout">Idle Timeout</label>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-floating">
+                    <input type="text" id="url" class="form-control"
+                        value="https://api64.ipify.org?format=json"
+                        placeholder="https://example.com">
+                    <label for="url">URL</label>
+                </div>
+            </div>
+            <div class="col-12 text-center">
+                <button type="button" id="send" class="btn btn-primary">Send Request</button>
+            </div>
+            <div class="col-12">
+                <textarea id="result" class="form-control" rows="20" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const requestTimeoutString = document.getElementById("request-timeout");
+        const idleTimeoutString = document.getElementById("idle-timeout");
+        const url = document.getElementById("url");
+        const send = document.getElementById("send");
+        const result = document.getElementById("result");
+
+        send.addEventListener("click", async () => {
+            if (send.disabled) {
+                return;
+            }
+
+            send.disabled = true;
+
+            let requestTimeout = parseInt(requestTimeoutString.value);
+            if (Number.isNaN(requestTimeout)) {
+                requestTimeout = undefined;
+            }
+
+            let idleTimeout = parseInt(idleTimeoutString.value);
+            if (Number.isNaN(idleTimeout)) {
+                idleTimeout = undefined;
+            }
+
+            try {
+                const response = await FetchHelper.timeoutFetch(url.value, { requestTimeout, idleTimeout });
+        
+                const text = await response.text();
+
+                result.value = text;
+
+                result.classList.remove("is-invalid");
+            } catch(error) {
+                console.error(error);
+
+                if (error instanceof Error) {
+                    result.value = error.message;
+                } else {
+                    result.value = "";
+                }
+
+                result.classList.add("is-invalid");
+            } finally {
+                send.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>
