@@ -25,6 +25,9 @@ export interface TimeoutOptions {
 export class TimeoutResponse {
     private _body?: ReadableStream<Uint8Array> | null;
 
+    /**
+     * You should not new a `TimeoutResponse` on your own.
+     */
     constructor(private readonly response: Response, private readonly createBody?: () => ReadableStream<Uint8Array>) {
     }
 
