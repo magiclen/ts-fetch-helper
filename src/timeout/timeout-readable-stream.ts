@@ -9,12 +9,12 @@ import { TimeoutAbort } from "./timeout-abort.js";
  *
  * @param {ReadableStream<T>} stream The original `ReadableStream` to be monitored.
  * @param {TimeoutAbort} timeoutAbort An instance of `TimeoutAbort` used to manage timeouts and abort signals.
- * @param {number} [timeout = undefined] The timeout duration in milliseconds to be reset on each chunk.
+ * @param {number | null} [timeout = undefined] The timeout duration in milliseconds to be reset on each chunk.
  * @param {boolean} [terminateTimeoutAbort = false] Terminate `timeoutAbort` when the stream is at the end.
  *
  * @returns {ReadableStream<T>} A new `ReadableStream` that applies the timeout management.
  */
-export const createTimeoutReadableStream = <T> (stream: ReadableStream<T>, timeoutAbort: TimeoutAbort, timeout?: number, terminateTimeoutAbort = false): ReadableStream<T> => {
+export const createTimeoutReadableStream = <T> (stream: ReadableStream<T>, timeoutAbort: TimeoutAbort, timeout?: number | null, terminateTimeoutAbort = false): ReadableStream<T> => {
     const endTimeoutAbort = () => {
         if (terminateTimeoutAbort) {
             timeoutAbort.abort();
@@ -25,7 +25,7 @@ export const createTimeoutReadableStream = <T> (stream: ReadableStream<T>, timeo
 
     let monitoredStream;
 
-    if (typeof timeout === "undefined") {
+    if (typeof timeout !== "number") {
         monitoredStream = new TransformStream<T, T>({
             start() {
                 timeoutAbort.clearTimeout();

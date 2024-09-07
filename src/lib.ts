@@ -11,12 +11,12 @@ export interface TimeoutOptions {
     /**
      * Request timeout in milliseconds. This will set a maximum lifespan for the request.
      */
-    requestTimeout?: number,
+    requestTimeout?: number | null,
 
     /**
      * Idle timeout in milliseconds. Resets each time data is received, aborting the request if no data is received within the specified duration.
      */
-    idleTimeout?: number,
+    idleTimeout?: number | null,
 }
 
 /**
@@ -165,7 +165,7 @@ export const timeoutFetch = async (input: string | URL, init?: Omit<RequestInit,
     const options = init as RequestInit;
     options.signal = timeoutAbort.signal;
 
-    if (typeof init.idleTimeout !== "undefined") {
+    if (typeof init.idleTimeout === "number") {
         if (options.body instanceof ReadableStream) {
             options.body = createTimeoutReadableStream(options.body, timeoutAbort, init.idleTimeout);
         } else {
@@ -175,7 +175,7 @@ export const timeoutFetch = async (input: string | URL, init?: Omit<RequestInit,
 
     const response = await fetch(input, options);
 
-    if (typeof init.idleTimeout !== "undefined") {
+    if (typeof init.idleTimeout === "number") {
         if (!(options.body instanceof ReadableStream)) {
             timeoutAbort.clearTimeout();
         }

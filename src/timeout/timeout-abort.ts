@@ -14,10 +14,10 @@ export class TimeoutAbort {
     /**
      * Constructs a `TimeoutAbort` instance with an optional lifespan timeout.
      *
-     * @param {number} [lifespan = undefined] The lifespan in milliseconds after which the instance will be automatically aborted.
+     * @param {number | null} [lifespan = undefined] The lifespan in milliseconds after which the instance will be automatically aborted.
      */
-    public constructor(lifespan?: number) {
-        if (typeof lifespan !== "undefined") {
+    public constructor(lifespan?: number | null) {
+        if (typeof lifespan === "number") {
             this.lifespanTimeoutHandle = setTimeout(() => {
                 this._isAborted = true;
 
