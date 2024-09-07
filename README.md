@@ -8,7 +8,7 @@ This package provides some useful utilities and functions for using the Fetch AP
 ## Usage
 
 ```typescript
-import { timeoutFetch } from "fetch-helper";
+import { timeoutFetch } from "fetch-helper-x";
 
 const response = await timeoutFetch("https://google.com", { requestTimeout: 10000, idleTimeout: 1000 });
 
