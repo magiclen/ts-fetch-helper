@@ -1,6 +1,6 @@
 {
     "name": "fetch-helper-x",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "This package provides some useful utilities and functions for using the Fetch API.",
     "type": "module",
     "exports": "./lib/lib.js",

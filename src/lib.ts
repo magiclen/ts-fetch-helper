@@ -195,7 +195,14 @@ export const timeoutFetch = async (input: string | URL, init?: TimeoutRequestIni
         }
     }
 
-    const response = await fetch(input, options);
+    let response: Response;
+    
+    try {
+        response = await fetch(input, options);
+    } catch (error) {
+        timeoutAbort.abort();
+        throw error;
+    }
 
     if (typeof init.idleTimeout === "number") {
         if (!(options.body instanceof ReadableStream)) {
