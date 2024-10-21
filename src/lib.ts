@@ -11,12 +11,12 @@ export interface TimeoutOptions {
     /**
      * Request timeout in milliseconds. This will set a maximum lifespan for the request.
      */
-    requestTimeout?: number | null,
+    requestTimeout?: number | null;
 
     /**
      * Idle timeout in milliseconds. Resets each time data is received, aborting the request if no data is received within the specified duration.
      */
-    idleTimeout?: number | null,
+    idleTimeout?: number | null;
 }
 
 /**
@@ -28,62 +28,66 @@ export class TimeoutResponse {
     /**
      * You should not new a `TimeoutResponse` on your own.
      */
-    constructor(private readonly response: Response, private timeoutAbort?: TimeoutAbort, private readonly createBody?: () => ReadableStream<Uint8Array>) {
+    constructor(
+        private readonly response: Response,
+        private timeoutAbort?: TimeoutAbort,
+        private readonly createBody?: () => ReadableStream<Uint8Array>,
+    ) {
     }
 
     /**
      * Getter for response headers.
      */
-    public get headers() {
+    get headers(): Headers {
         return this.response.headers;
     }
 
     /**
      * Getter for the `ok` status of the response.
      */
-    public get ok() {
+    get ok(): boolean {
         return this.response.ok;
     }
 
     /**
      * Getter for whether the response was redirected.
      */
-    public get redirected() {
+    get redirected(): boolean {
         return this.response.redirected;
     }
 
     /**
      * Getter for the response status code.
      */
-    public get status() {
+    get status(): number {
         return this.response.status;
     }
 
     /**
      * Getter for the status text of the response.
      */
-    public get statusText() {
+    get statusText(): string {
         return this.response.statusText;
     }
 
     /**
      * Getter for the response type.
      */
-    public get type() {
+    get type(): ResponseType {
         return this.response.type;
     }
 
     /**
      * Getter for the response URL.
      */
-    public get url() {
+    get url(): string {
         return this.response.url;
     }
 
     /**
      * If you want to cancel the body, use this function instead of `body.cancel()` or `body.getReader().cancel()`.
      */
-    public async cancelBody(): Promise<void> {
+    async cancelBody(): Promise<void> {
         if (typeof this._body !== "undefined") {
             if (this._body !== null) {
                 await this._body.cancel();
@@ -91,7 +95,7 @@ export class TimeoutResponse {
         } else if (this.response.body) {
             await this.response.body.cancel();
         }
-        
+
         if (typeof this.timeoutAbort !== "undefined") {
             this.timeoutAbort.abort();
         }
@@ -100,7 +104,7 @@ export class TimeoutResponse {
     /**
      * Getter for the body stream of the response. If `createBody` is provided, it will be used to create a body stream with timeout management.
      */
-    public get body(): ReadableStream<Uint8Array> | null {
+    get body(): ReadableStream<Uint8Array> | null {
         if (typeof this._body === "undefined") {
             if (typeof this.createBody !== "undefined") {
                 this._body = this.createBody();
@@ -115,7 +119,7 @@ export class TimeoutResponse {
     /**
      * Getter for whether the body has already been used.
      */
-    public get bodyUsed() {
+    get bodyUsed(): boolean {
         return this.response.bodyUsed;
     }
 
@@ -124,7 +128,7 @@ export class TimeoutResponse {
      *
      * @returns {Promise<string>} The body content in text form.
      */
-    public async text(): Promise<string> {
+    async text(): Promise<string> {
         if (this.body === null) {
             return "";
         }
@@ -153,7 +157,7 @@ export class TimeoutResponse {
      * @template T The expected JSON type.
      * @returns {Promise<T>} The parsed JSON object.
      */
-    public async json<T>(): Promise<T> {
+    async json<T>(): Promise<T> {
         const text = await this.text();
 
         return JSON.parse(text) as T;
@@ -163,7 +167,10 @@ export class TimeoutResponse {
 /**
  * Options for the fetch request, including request timeout and idle timeout.
  */
-export type TimeoutRequestInit = Omit<RequestInit, "signal" | "duplex"> & TimeoutOptions & { duplex?: "half" };
+export type TimeoutRequestInit =
+    & Omit<RequestInit, "signal" | "duplex">
+    & TimeoutOptions
+    & { duplex?: "half" };
 
 /**
  * A utility function to perform a fetch request with optional request and idle timeouts.
@@ -175,8 +182,15 @@ export type TimeoutRequestInit = Omit<RequestInit, "signal" | "duplex"> & Timeou
  *
  * @throws {AbortError} If the request is aborted due to a timeout.
  */
-export const timeoutFetch = async (input: string | URL, init?: TimeoutRequestInit): Promise<TimeoutResponse> => {
-    if (typeof init === "undefined" || (typeof init.idleTimeout === "undefined" && typeof init.requestTimeout === "undefined")) {
+export const timeoutFetch = async (
+    input: string | URL,
+    init?: TimeoutRequestInit,
+): Promise<TimeoutResponse> => {
+    if (
+        typeof init === "undefined"
+        || (typeof init.idleTimeout === "undefined"
+            && typeof init.requestTimeout === "undefined")
+    ) {
         const response = await fetch(input, init);
 
         return new TimeoutResponse(response);
@@ -189,14 +203,18 @@ export const timeoutFetch = async (input: string | URL, init?: TimeoutRequestIni
 
     if (typeof init.idleTimeout === "number") {
         if (options.body instanceof ReadableStream) {
-            options.body = createTimeoutReadableStream(options.body, timeoutAbort, init.idleTimeout);
+            options.body = createTimeoutReadableStream(
+                options.body,
+                timeoutAbort,
+                init.idleTimeout,
+            );
         } else {
             timeoutAbort.resetTimeout(init.idleTimeout);
         }
     }
 
     let response: Response;
-    
+
     try {
         response = await fetch(input, options);
     } catch (error) {
@@ -215,7 +233,12 @@ export const timeoutFetch = async (input: string | URL, init?: TimeoutRequestIni
     if (response.body !== null) {
         const body = response.body;
 
-        createBody = () => createTimeoutReadableStream(body, timeoutAbort, init.idleTimeout, true);
+        createBody = (): ReadableStream<Uint8Array> => createTimeoutReadableStream(
+            body,
+            timeoutAbort,
+            init.idleTimeout,
+            true,
+        );
     } else {
         timeoutAbort.abort();
     }
@@ -230,6 +253,4 @@ export const timeoutFetch = async (input: string | URL, init?: TimeoutRequestIni
  *
  * @returns {boolean} `true` if the error is an `AbortError`, otherwise `false`.
  */
-export const isAbortError = (error: Error): boolean => {
-    return error.name === "AbortError";
-};
+export const isAbortError = (error: Error): boolean => error.name === "AbortError";

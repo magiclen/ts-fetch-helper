@@ -16,7 +16,7 @@ export class TimeoutAbort {
      *
      * @param {number | null} [lifespan = undefined] The lifespan in milliseconds after which the instance will be automatically aborted.
      */
-    public constructor(lifespan?: number | null) {
+    constructor(lifespan?: number | null) {
         if (typeof lifespan === "number") {
             this.lifespanTimeoutHandle = setTimeout(() => {
                 this._isAborted = true;
@@ -35,16 +35,16 @@ export class TimeoutAbort {
      *
      * @returns {AbortSignal} The `AbortSignal` that allows for cancellation of operations.
      */
-    public get signal(): AbortSignal {
+    get signal(): AbortSignal {
         return this.abortController.signal;
     }
-    
+
     /**
      * Checks if the instance has been aborted.
      *
      * @returns {boolean} `true` if the instance is aborted, otherwise `false`.
      */
-    public get isAborted(): boolean {
+    get isAborted(): boolean {
         return this._isAborted;
     }
 
@@ -55,7 +55,7 @@ export class TimeoutAbort {
      *
      * @returns {boolean} `true` if the timeout was successfully reset, `false` if the instance is already aborted.
      */
-    public resetTimeout(newTimeout: number): boolean {
+    resetTimeout(newTimeout: number): boolean {
         if (this._isAborted) {
             return false;
         }
@@ -67,7 +67,7 @@ export class TimeoutAbort {
         this.timeoutHandle = setTimeout(() => {
             this._isAborted = true;
             this.timeoutHandle = undefined;
-            
+
             if (typeof this.lifespanTimeoutHandle !== "undefined") {
                 clearTimeout(this.lifespanTimeoutHandle);
             }
@@ -81,10 +81,10 @@ export class TimeoutAbort {
     /**
      * Clears the currently set timeout, if any.
      */
-    public clearTimeout(): void {
+    clearTimeout(): void {
         if (typeof this.timeoutHandle !== "undefined") {
             clearTimeout(this.timeoutHandle);
-            
+
             this.timeoutHandle = undefined;
         }
     }
@@ -92,7 +92,7 @@ export class TimeoutAbort {
     /**
      * Aborts the instance immediately, clearing any active timeouts and signaling cancellation.
      */
-    public abort(): void {
+    abort(): void {
         if (this._isAborted) {
             return;
         }

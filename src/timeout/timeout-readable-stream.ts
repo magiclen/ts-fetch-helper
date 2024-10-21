@@ -1,4 +1,4 @@
-import { TimeoutAbort } from "./timeout-abort.js";
+import type { TimeoutAbort } from "./timeout-abort.js";
 
 /**
  * Creates a new `ReadableStream` that monitors and handles timeouts using the provided `TimeoutAbort` instance.
@@ -14,8 +14,13 @@ import { TimeoutAbort } from "./timeout-abort.js";
  *
  * @returns {ReadableStream<T>} A new `ReadableStream` that applies the timeout management.
  */
-export const createTimeoutReadableStream = <T> (stream: ReadableStream<T>, timeoutAbort: TimeoutAbort, timeout?: number | null, terminateTimeoutAbort = false): ReadableStream<T> => {
-    const endTimeoutAbort = () => {
+export const createTimeoutReadableStream = <T>(
+    stream: ReadableStream<T>,
+    timeoutAbort: TimeoutAbort,
+    timeout?: number | null,
+    terminateTimeoutAbort = false,
+): ReadableStream<T> => {
+    const endTimeoutAbort = (): void => {
         if (terminateTimeoutAbort) {
             timeoutAbort.abort();
         } else {
@@ -27,24 +32,24 @@ export const createTimeoutReadableStream = <T> (stream: ReadableStream<T>, timeo
 
     if (typeof timeout !== "number") {
         monitoredStream = new TransformStream<T, T>({
-            start() {
+            start: (): void => {
                 timeoutAbort.clearTimeout();
             },
-            flush(controller) {
+            flush: (controller): void => {
                 endTimeoutAbort();
                 controller.terminate();
             },
         });
     } else {
         monitoredStream = new TransformStream<T, T>({
-            start() {
+            start: (): void => {
                 timeoutAbort.resetTimeout(timeout);
             },
-            transform(chunk, controller) {
+            transform: (chunk, controller): void => {
                 timeoutAbort.resetTimeout(timeout);
                 controller.enqueue(chunk);
             },
-            flush(controller) {
+            flush: (controller): void => {
                 endTimeoutAbort();
                 controller.terminate();
             },
